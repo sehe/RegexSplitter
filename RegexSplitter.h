@@ -16,6 +16,10 @@
 #include <boost/spirit/include/qi.hpp>
 namespace qi = boost::spirit::qi;
 
+#include <boost/fusion/algorithm/iteration/for_each.hpp>
+#include <boost/fusion/include/for_each.hpp>
+
+
 namespace RegexSplitter {
 class MyString;
 }
@@ -80,6 +84,7 @@ class ASTNode
 {
 public:
 
+
 	typedef enum
 	{
 		COLLECTION_c	= 1,
@@ -99,12 +104,14 @@ public:
 
 	// BREAKABLE_c
 	ASTNode(
+			int, // TODO
 			std::vector<char> const & data,
 			Type const type);
 
 	// UNBREAKABLE_c
+	template < class FUSION >
 	ASTNode(
-			ASTNode const * other,
+			FUSION & fusion,
 			Type const type);
 
 #if 0
@@ -122,6 +129,9 @@ public:
 
     static std::string const
 	TypeStr(Type const & type);
+
+    std::string const &
+	GetString(void) const;
 
     virtual ~ASTNode();
 

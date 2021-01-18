@@ -8,6 +8,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 
+
 namespace qi = boost::spirit::qi;
 namespace phx = boost::phoenix;
 
@@ -15,7 +16,6 @@ namespace phx = boost::phoenix;
 
 namespace RegexSplitter {
 
-// TODO: memory leak for releasing all the phx::new_ instances!
 // TODO: nullptr checks are missing for ASTNode*
 
 std::map<MyString::Type, std::string> const MyString::sType2String =
@@ -74,6 +74,7 @@ ASTNode::ASTNode(
 
 // BREAKABLE_c
 ASTNode::ASTNode(
+		int,
 		std::vector<char> const & data,
 		Type const type)
 : fString(),
@@ -90,20 +91,41 @@ ASTNode::ASTNode(
 	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
 };
 
+
+struct Collect
+{
+    void operator()( char c ) const
+    {
+        fCollect += c;
+    };
+
+    void operator() (ASTNode * ptr ) const
+    {
+    	if (ptr != nullptr)
+    	{
+    		fCollect += ptr->GetString();
+    	}
+    };
+
+    mutable std::string fCollect; // TODO: has to be MyString ref to update directly
+};
+
 // UNBREAKABLE_c
+template < class FUSION >
 ASTNode::ASTNode(
-		ASTNode const * other,
+		FUSION & fusion,
 		Type const type)
 : fString(),
   fStrings(),
   fType(type)
 {
-	fString = MyString(other->fString.GetStr(), MyString::UNBREAKABLE_c);
-	delete other;
-	other = nullptr;
+	Collect collect;
+	boost::fusion::for_each(fusion, collect);
+	fString = MyString (collect.fCollect,  MyString::UNBREAKABLE_c);
 
 	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
 }
+
 
 #if 0
 	// TEST_c, used for debugging
@@ -118,9 +140,15 @@ ASTNode::ASTNode(
 }
 #endif
 
-ASTNode::~ ASTNode()
+ASTNode::~ASTNode()
 {
 	std::cout << "### ASTNode d'tor " << TypeStr(fType) << std::endl;
+}
+
+std::string const &
+ASTNode::GetString(void) const
+{
+	return fString.GetStr();
 }
 
 void
@@ -162,10 +190,10 @@ Grammar::Grammar()
 	tok_group  =
 			// TODO: i want to pass the ENTIRE string including leading '(' and trailing ')'
 			// TODO: can a group be empty?
-			( qi::char_('(') >> tok_something >> qi::char_(')') ) [ qi::_val = phx::new_<ASTNode> (qi::_2, ASTNode::UNBREAKABLE_c) ];
+			( qi::char_('(') >> tok_something >> qi::char_(')') ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
 
 	tok_something =
-			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (1, qi::_1, ASTNode::BREAKABLE_c) ];
 }
 
 } // namespace RegexSplitter
