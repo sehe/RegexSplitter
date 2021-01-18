@@ -104,8 +104,7 @@ public:
 
 	// BREAKABLE_c
 	ASTNode(
-			int, // TODO
-			std::vector<char> const & data,
+			std::vector<char> & data,
 			Type const type);
 
 	// UNBREAKABLE_c

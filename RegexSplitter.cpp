@@ -72,24 +72,6 @@ ASTNode::ASTNode(
 	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
 }
 
-// BREAKABLE_c
-ASTNode::ASTNode(
-		int,
-		std::vector<char> const & data,
-		Type const type)
-: fString(),
-  fStrings(),
-  fType(type)
-{
-	std::string str;
-	for (auto & elem : data)
-	{
-		str.push_back(elem);
-	}
-	fString = MyString(str, MyString::BREAKABLE_c);
-
-	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
-};
 
 
 struct Collect
@@ -110,6 +92,24 @@ struct Collect
     mutable std::string fCollect; // TODO: has to be MyString ref to update directly
 };
 
+// BREAKABLE_c
+ASTNode::ASTNode(
+		std::vector<char> & data,
+		Type const type)
+: fString(),
+  fStrings(),
+  fType(type)
+{
+	std::string str;
+	for (auto & elem : data)
+	{
+		str.push_back(elem);
+	}
+	fString = MyString(str, MyString::BREAKABLE_c);
+
+	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+};
+
 // UNBREAKABLE_c
 template < class FUSION >
 ASTNode::ASTNode(
@@ -125,7 +125,6 @@ ASTNode::ASTNode(
 
 	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
 }
-
 
 #if 0
 	// TEST_c, used for debugging
@@ -193,7 +192,7 @@ Grammar::Grammar()
 			( qi::char_('(') >> tok_something >> qi::char_(')') ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
 
 	tok_something =
-			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (1, qi::_1, ASTNode::BREAKABLE_c) ];
+			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
 }
 
 } // namespace RegexSplitter
