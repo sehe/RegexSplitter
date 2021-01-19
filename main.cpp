@@ -37,16 +37,16 @@ TestRegexSplitter(
 		std::string const & input)
 {
 	RegexSplitter::ASTNode* out_node;
-    bool result = Parse(input, RegexSplitter::Grammar(), out_node);
 
-    if (result) {
-		std::cout << "print():" << input << std::endl;
+	std::cout << "TEST:" << input << std::endl;
+
+	bool result = Parse(input, RegexSplitter::Grammar(), out_node);
+	if (result) {
 		out_node->print(0);
 		std::cout << std::endl;
 		delete out_node;
 		std::cout << std::endl;
-    }
-
+	}
 }
 /******************************************************************************/
 
@@ -67,6 +67,7 @@ main(
         TestRegexSplitter("(hello)(world)");
         TestRegexSplitter("(hello)something(world)");
         TestRegexSplitter("(hello)?something(world)");
+        TestRegexSplitter("(hello)?something((world))");
 
 #if 0
         TestRegexSplitter("aa");

@@ -18,6 +18,8 @@ namespace phx = boost::phoenix;
 
 #include "RegexSplitter.h"
 
+#define PRINT_DEBUG
+
 namespace RegexSplitter {
 
 // TODO: nullptr checks are missing for ASTNode*
@@ -61,6 +63,10 @@ ASTNode::ASTNode(
   fStrings(),
   fType(type)
 {
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor: " << TypeStr(fType) << std::endl;
+#endif
+
 	fStrings.push_back(first->fString);
 
 	delete first;
@@ -72,40 +78,12 @@ ASTNode::ASTNode(
 		delete other;
 		other = nullptr;
 	}
-
-	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor: " << TypeStr(fType) << std::endl;
+#endif
 }
 
 
-struct Collect
-{
-	Collect()
-	: fCollect()
-	{ }
-
-	void operator()( char c ) const
-	{
-		fCollect += c;
-	};
-
-	void operator() (boost::optional<char> & c) const
-	{
-		if (c)
-		{
-			fCollect += *c;
-		}
-	}
-
-	void operator() (ASTNode * ptr ) const
-	{
-		if (ptr != nullptr)
-		{
-			fCollect += ptr->GetString();
-		}
-	};
-
-	mutable std::string fCollect; // TODO: has to be MyString ref to update directly
-};
 
 // BREAKABLE_c
 ASTNode::ASTNode(
@@ -115,14 +93,18 @@ ASTNode::ASTNode(
   fStrings(),
   fType(type)
 {
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
+#endif
 	std::string str;
 	for (auto & elem : data)
 	{
 		str.push_back(elem);
 	}
 	fString = MyString(str, MyString::BREAKABLE_c);
-
-	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor #2: " << fString << std::endl;
+#endif
 };
 
 // UNBREAKABLE_c
@@ -134,11 +116,56 @@ ASTNode::ASTNode(
   fStrings(),
   fType(type)
 {
+	// local helper
+	struct Collect
+	{
+		Collect()
+		: fCollect()
+		{ }
+
+		void operator()( char c ) const
+		{
+#ifdef PRINT_DEBUG
+			std::cout << "--- collect char" << std::endl;
+#endif
+			fCollect += c;
+		};
+
+		void operator() (boost::optional<char> & c) const
+		{
+#ifdef PRINT_DEBUG
+			std::cout << "--- collect optional char" << std::endl;
+#endif
+			if (c)
+			{
+				fCollect += *c;
+			}
+		}
+
+		void operator() (ASTNode * ptr ) const
+		{
+#ifdef PRINT_DEBUG
+			std::cout << "--- collect ASTNode *" << std::endl;
+#endif
+
+			if (ptr != nullptr)
+			{
+				fCollect += ptr->GetString();
+			}
+		};
+
+		mutable std::string fCollect; // TODO: has to be MyString ref to update directly
+	};
+
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
+#endif
 	Collect collect;
 	boost::fusion::for_each(fusion, collect);
 	fString = MyString (collect.fCollect,  MyString::UNBREAKABLE_c);
-
-	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+#ifdef PRINT_DEBUG
+	std::cout << "### ASTNode c'tor #2: " << fString << std::endl;
+#endif
 }
 
 #if 0
@@ -150,7 +177,9 @@ ASTNode::ASTNode(
   fStrings(),
   fType(type)
 {
+#ifdef PRINT_DEBUG
 	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+#endif
 }
 #endif
 
@@ -211,7 +240,7 @@ Grammar::Grammar()
 			( qi::char_('(') >> tok_something >> qi::char_(')') >> (-qi::char_('?')) ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
 
 	tok_something =
-			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+			( +qi::char_ ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
 }
 
 } // namespace RegexSplitter
