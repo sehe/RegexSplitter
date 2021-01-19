@@ -66,6 +66,8 @@ main(
         TestRegexSplitter("(hello)");
         TestRegexSplitter("(hello)(world)");
         TestRegexSplitter("(hello)something(world)");
+        TestRegexSplitter("(hello)?something(world)");
+
 #if 0
         TestRegexSplitter("aa");
         TestRegexSplitter("Hello, World!");

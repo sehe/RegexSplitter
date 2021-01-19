@@ -8,9 +8,13 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 
-
 namespace qi = boost::spirit::qi;
 namespace phx = boost::phoenix;
+
+#include <boost/fusion/algorithm/iteration/for_each.hpp>
+#include <boost/fusion/include/for_each.hpp>
+
+#include <boost/optional.hpp>
 
 #include "RegexSplitter.h"
 
@@ -19,19 +23,19 @@ namespace RegexSplitter {
 // TODO: nullptr checks are missing for ASTNode*
 
 std::map<MyString::Type, std::string> const MyString::sType2String =
-	{
-			{MyString::UNDEFINED_c,		"?"	},
-			{MyString::BREAKABLE_c,		"B"	},
-			{MyString::UNBREAKABLE_c,	"U"	},
-	};
+{
+	{MyString::UNDEFINED_c,		"?"	},
+	{MyString::BREAKABLE_c,		"B"	},
+	{MyString::UNBREAKABLE_c,	"U"	},
+};
 
 std::map<ASTNode::Type, std::string> const ASTNode::sType2String =
-	{
-			{ASTNode::COLLECTION_c,		"Collection"	},
-			{ASTNode::BREAKABLE_c,		"Breakable"		},
-			{ASTNode::UNBREAKABLE_c,	"Unbreakable"	},
-			{ASTNode::TEST_c,			"Test"			},
-	};
+{
+	{ASTNode::COLLECTION_c,		"Collection"	},
+	{ASTNode::BREAKABLE_c,		"Breakable"	},
+	{ASTNode::UNBREAKABLE_c,	"Unbreakable"	},
+	{ASTNode::TEST_c,		"Test"		},
+};
 
 
 std::string const
@@ -73,23 +77,30 @@ ASTNode::ASTNode(
 }
 
 
-
 struct Collect
 {
-    void operator()( char c ) const
-    {
-        fCollect += c;
-    };
+	void operator()( char c ) const
+	{
+		fCollect += c;
+	};
 
-    void operator() (ASTNode * ptr ) const
-    {
-    	if (ptr != nullptr)
-    	{
-    		fCollect += ptr->GetString();
-    	}
-    };
+	void operator() (boost::optional<char> & c) const
+	{
+		if (c)
+		{
+			fCollect += *c;
+		}
+	}
 
-    mutable std::string fCollect; // TODO: has to be MyString ref to update directly
+	void operator() (ASTNode * ptr ) const
+	{
+		if (ptr != nullptr)
+		{
+			fCollect += ptr->GetString();
+		}
+	};
+
+	mutable std::string fCollect; // TODO: has to be MyString ref to update directly
 };
 
 // BREAKABLE_c
@@ -187,9 +198,8 @@ Grammar::Grammar()
 			( tok_group | tok_something );
 
 	tok_group  =
-			// TODO: i want to pass the ENTIRE string including leading '(' and trailing ')'
 			// TODO: can a group be empty?
-			( qi::char_('(') >> tok_something >> qi::char_(')') ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+			( qi::char_('(') >> tok_something >> qi::char_(')') >> (-qi::char_('?')) ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
 
 	tok_something =
 			( +(qi::char_ - qi::char_("()")) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];

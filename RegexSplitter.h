@@ -16,11 +16,8 @@
 #include <boost/spirit/include/qi.hpp>
 namespace qi = boost::spirit::qi;
 
-#include <boost/fusion/algorithm/iteration/for_each.hpp>
-#include <boost/fusion/include/for_each.hpp>
-
-
-namespace RegexSplitter {
+namespace RegexSplitter
+{
 class MyString;
 }
 
@@ -28,8 +25,8 @@ std::ostream & operator<<(
 		std::ostream & os,
 		RegexSplitter::MyString const & val);
 
-namespace RegexSplitter {
-
+namespace RegexSplitter
+{
 
 class MyString
 {
@@ -70,21 +67,19 @@ public:
 		return fType;
 	}
 
-    static std::string const
+	static std::string const
 	TypeStr(Type const & type);
 
 private:
 	std::string fStr;
 	Type fType;
-    static std::map<Type, std::string> const sType2String;
+	static std::map<Type, std::string> const sType2String;
 };
 
 
 class ASTNode
 {
 public:
-
-
 	typedef enum
 	{
 		COLLECTION_c	= 1,
@@ -92,7 +87,6 @@ public:
 		UNBREAKABLE_c	= 3,
 		TEST_c			= 4,
 	} Type;
-
 
 	// TODO: use Type 1st and vargs next for c'tors? And dispatch to value-templates? to have a unique function structure
 
@@ -118,27 +112,29 @@ public:
 	ASTNode(
 			char const,
 			Type const type);
- #endif
+#endif
 
 	ASTNode(ASTNode const &rhs) = delete;
 	ASTNode & operator=(ASTNode const &rhs) = delete;
 
 	void print(
-    		int indent = 0);
+			int indent = 0);
 
-    static std::string const
-	TypeStr(Type const & type);
+	static std::string const
+	TypeStr(
+			Type const & type);
 
-    std::string const &
+	std::string const &
 	GetString(void) const;
 
-    virtual ~ASTNode();
+	virtual ~ASTNode();
 
 private:
-    MyString fString;
-    std::vector<MyString> fStrings;
-    Type fType;
-    static std::map<Type, std::string> const sType2String;
+	// TODO: don't use blob -> sub-class
+	MyString fString;
+	std::vector<MyString> fStrings;
+	Type fType;
+	static std::map<Type, std::string> const sType2String;
 };
 
 using ASTNodePtr = ASTNode*;
@@ -146,14 +142,14 @@ using ASTNodePtr = ASTNode*;
 class Grammar : public qi::grammar<std::string::const_iterator, ASTNode*>
 {
 public:
-    using Iterator = std::string::const_iterator;
+	using Iterator = std::string::const_iterator;
 
-    Grammar();
+	Grammar();
 
-    qi::rule<Iterator, ASTNode*>
-    	tok_RE, tok_elements, tok_element, tok_group, tok_something;
+	qi::rule<Iterator, ASTNode*>
+		tok_RE, tok_elements, tok_element, tok_group, tok_something;
 };
 
-}
+} // RegexSplitter
 
 #endif /* REGEX_SPLITTER_H_ */
