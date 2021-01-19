@@ -64,7 +64,7 @@ ASTNode::ASTNode(
   fType(type)
 {
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
 #endif
 
 	fStrings.push_back(first->fString);
@@ -79,7 +79,7 @@ ASTNode::ASTNode(
 		other = nullptr;
 	}
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor #2: " << TypeStr(fType) << std::endl;
 #endif
 }
 
@@ -185,7 +185,8 @@ ASTNode::ASTNode(
 
 ASTNode::~ASTNode()
 {
-	std::cout << "### ASTNode d'tor " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode d'tor #1: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode d'tor #2: " << fString << std::endl;
 }
 
 std::string const &
