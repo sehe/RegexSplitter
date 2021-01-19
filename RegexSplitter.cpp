@@ -240,7 +240,7 @@ Grammar::Grammar()
 			( qi::char_('(') >> tok_something >> qi::char_(')') >> (-qi::char_('?')) ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
 
 	tok_something =
-			( +qi::char_ ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+			( +(qi::char_ /* - qi::char_("()") */) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
 }
 
 } // namespace RegexSplitter
