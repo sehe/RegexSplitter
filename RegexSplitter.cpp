@@ -79,6 +79,10 @@ ASTNode::ASTNode(
 
 struct Collect
 {
+	Collect()
+	: fCollect()
+	{ }
+
 	void operator()( char c ) const
 	{
 		fCollect += c;
@@ -186,7 +190,12 @@ ASTNode::TypeStr(
 
 
 Grammar::Grammar()
-: Grammar::base_type(tok_RE)
+: Grammar::base_type(tok_RE),
+  tok_RE(),
+  tok_elements(),
+  tok_element(),
+  tok_group(),
+  tok_something()
 {
 	tok_RE =
 			( tok_elements ) [ qi::_val = qi::_1 ];

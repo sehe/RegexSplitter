@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++11
+CXXFLAGS=-std=c++11 -Weffc++
 
 INSTALL_FILES=\
 	regex-splitter 
