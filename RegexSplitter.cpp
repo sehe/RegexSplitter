@@ -87,21 +87,15 @@ ASTNode::ASTNode(
 
 // BREAKABLE_c
 ASTNode::ASTNode(
-		std::vector<char> & data,
+		std::string & data,
 		Type const type)
-: fString(),
+: fString(data, TypeToDataType(type)),
   fStrings(),
   fType(type)
 {
 #ifdef PRINT_DEBUG
 	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
 #endif
-	std::string str;
-	for (auto & elem : data)
-	{
-		str.push_back(elem);
-	}
-	fString = MyString(str, MyString::BREAKABLE_c);
 #ifdef PRINT_DEBUG
 	std::cout << "### ASTNode c'tor #2: " << fString << std::endl;
 #endif
@@ -151,6 +145,8 @@ ASTNode::ASTNode(
 			if (ptr != nullptr)
 			{
 				fCollect += ptr->GetString();
+				delete ptr;
+				ptr = nullptr;
 			}
 		};
 
@@ -186,12 +182,47 @@ ASTNode::ASTNode(
 ASTNode::~ASTNode()
 {
 	std::cout << "### ASTNode d'tor #1: " << TypeStr(fType) << std::endl;
-	std::cout << "### ASTNode d'tor #2: " << fString << std::endl;
+	if (fType == COLLECTION_c)
+	{
+		std::cout << "### ASTNode d'tor #2: C:" << GetString() << std::endl;
+	}
+	else
+	{
+		std::cout << "### ASTNode d'tor #2: " << fString << std::endl;
+	}
 }
 
-std::string const &
+MyString::Type
+ASTNode::TypeToDataType(
+		Type type)
+{
+	switch (type)
+	{
+	case BREAKABLE_c:
+		return MyString::BREAKABLE_c;
+		break;
+	case UNBREAKABLE_c:
+		return MyString::UNBREAKABLE_c;
+		break;
+	default:
+		return MyString::UNDEFINED_c;
+		break;
+	}
+}
+
+std::string // TODO: have to construct std::string because of COLLECTION_c
 ASTNode::GetString(void) const
 {
+	if (fType ==  COLLECTION_c)
+	{
+		std::string str;
+		for (auto elem : fStrings)
+		{
+			str += elem.GetStr();
+		}
+		return str;
+	}
+
 	return fString.GetStr();
 }
 
@@ -222,26 +253,47 @@ ASTNode::TypeStr(
 Grammar::Grammar()
 : Grammar::base_type(tok_RE),
   tok_RE(),
-  tok_elements(),
-  tok_element(),
-  tok_group(),
-  tok_something()
+  tok_TL_elements(), tok_TL_element(), tok_TL_group(), tok_TL_nongroup(),
+  tok_nested_elements(), tok_nested_element(), tok_nested_group(), tok_nested_nongroup()
 {
 	tok_RE =
-			( tok_elements ) [ qi::_val = qi::_1 ];
+		( tok_TL_elements )
+			[ qi::_val = qi::_1 ];
 
-	tok_elements =
-			( tok_element >> *tok_element ) [ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ];
+	// top level elements
 
-	tok_element =
-			( tok_group | tok_something );
+	tok_TL_elements =
+		( tok_TL_element >> *tok_TL_element )
+			[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ];
 
-	tok_group  =
-			// TODO: can a group be empty?
-			( qi::char_('(') >> tok_something >> qi::char_(')') >> (-qi::char_('?')) ) [ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+	tok_TL_element =
+		( tok_TL_group | tok_TL_nongroup );
 
-	tok_something =
-			( +(qi::char_ /* - qi::char_("()") */) ) [ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+	tok_TL_group  =
+		// TODO: can a group be empty?
+		( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
+			[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+
+	tok_TL_nongroup =
+		( qi::as_string[ +( qi::char_  - qi::char_("()") ) ] )
+			[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+
+	// the nested elements
+
+	tok_nested_elements =
+		( tok_nested_element >> *tok_nested_element )
+			[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ];
+
+	tok_nested_element =
+		( tok_nested_group | tok_nested_nongroup );
+
+	tok_nested_group =
+		( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
+			[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+
+	tok_nested_nongroup =
+		( qi::as_string [ +( qi::char_ - qi::char_("()") ) ] )
+			[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ];
 }
 
 } // namespace RegexSplitter

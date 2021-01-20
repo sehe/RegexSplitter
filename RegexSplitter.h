@@ -98,7 +98,7 @@ public:
 
 	// BREAKABLE_c
 	ASTNode(
-			std::vector<char> & data,
+			std::string & data,
 			Type const type);
 
 	// UNBREAKABLE_c
@@ -124,8 +124,12 @@ public:
 	TypeStr(
 			Type const & type);
 
-	std::string const &
+	std::string
 	GetString(void) const;
+
+	MyString::Type
+	TypeToDataType(
+			Type type);
 
 	virtual ~ASTNode();
 
@@ -147,7 +151,9 @@ public:
 	Grammar();
 
 	qi::rule<Iterator, ASTNode*>
-		tok_RE, tok_elements, tok_element, tok_group, tok_something;
+	tok_RE,
+	tok_TL_elements, tok_TL_element, tok_TL_group, tok_TL_nongroup,
+	tok_nested_elements, tok_nested_element, tok_nested_group, tok_nested_nongroup;
 };
 
 } // RegexSplitter
