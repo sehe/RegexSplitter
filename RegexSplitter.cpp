@@ -258,10 +258,10 @@ Grammar::Grammar()
 {
 	tok_RE =
 #ifndef PARSER_ONLY
-	( tok_TL_elements.alias() )
-#else
 	( tok_TL_elements )
 	[ qi::_val = qi::_1 ]
+#else
+	( tok_TL_elements.alias() )
 #endif
 	;
 
