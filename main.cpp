@@ -36,16 +36,18 @@ void
 TestRegexSplitter(
 		std::string const & input)
 {
-	RegexSplitter::ASTNode* out_node;
+	RegexSplitter::ASTNode* out_node = nullptr;
 
 	std::cout << "TEST:" << input << std::endl;
 
 	bool result = Parse(input, RegexSplitter::Grammar(), out_node);
 	if (result) {
-		out_node->print(0);
-		std::cout << std::endl;
-		delete out_node;
-		std::cout << std::endl;
+		if (out_node != nullptr) {
+			out_node->print(0);
+			std::cout << std::endl;
+			delete out_node;
+			std::cout << std::endl;
+		}
 	}
 }
 /******************************************************************************/

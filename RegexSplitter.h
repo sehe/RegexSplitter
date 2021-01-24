@@ -16,6 +16,9 @@
 #include <boost/spirit/include/qi.hpp>
 namespace qi = boost::spirit::qi;
 
+// for testing parser only, without AST construction
+#undef PARSER_ONLY
+
 namespace RegexSplitter
 {
 class MyString;
@@ -143,14 +146,22 @@ private:
 
 using ASTNodePtr = ASTNode*;
 
+#ifdef PARSER_ONLY
+class Grammar : public qi::grammar<std::string::const_iterator>
+#else
 class Grammar : public qi::grammar<std::string::const_iterator, ASTNode*>
+#endif
 {
 public:
 	using Iterator = std::string::const_iterator;
 
 	Grammar();
 
+#ifdef PARSER_ONLY
+	qi::rule<Iterator>
+#else
 	qi::rule<Iterator, ASTNode*>
+#endif
 	tok_RE,
 	tok_TL_elements, tok_TL_element, tok_TL_group, tok_TL_nongroup,
 	tok_nested_elements, tok_nested_element, tok_nested_group, tok_nested_nongroup;

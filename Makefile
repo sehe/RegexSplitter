@@ -12,6 +12,9 @@ clean :
 test : $(INSTALL_FILES)
 	./regex-splitter
 	
+RegexSplitter.o : RegexSplitter.cpp RegexSplitter.h
+
+main.o : main.cpp RegexSplitter.h
 regex-splitter : main.o RegexSplitter.o
 	$(CXX) -o $@ $^
 	

@@ -257,43 +257,68 @@ Grammar::Grammar()
   tok_nested_elements(), tok_nested_element(), tok_nested_group(), tok_nested_nongroup()
 {
 	tok_RE =
-		( tok_TL_elements )
-			[ qi::_val = qi::_1 ];
+#ifndef PARSER_ONLY
+	( tok_TL_elements.alias() )
+#else
+	( tok_TL_elements )
+	[ qi::_val = qi::_1 ]
+#endif
+	;
 
 	// top level elements
 
 	tok_TL_elements =
-		( tok_TL_element >> *tok_TL_element )
-			[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ];
+	( tok_TL_element >> *tok_TL_element )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ]
+#endif
+	;
 
 	tok_TL_element =
-		( tok_TL_group | tok_TL_nongroup );
+	( tok_TL_group | tok_TL_nongroup )
+	;
 
 	tok_TL_group  =
-		// TODO: can a group be empty?
-		( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
-			[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+	// TODO: can a group be empty?
+	( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ]
+#endif
+	;
 
 	tok_TL_nongroup =
-		( qi::as_string[ +( qi::char_  - qi::char_("()") ) ] )
-			[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ];
+	( qi::as_string[ +( qi::char_  - qi::char_("()") ) ] )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ]
+#endif
+	;
 
 	// the nested elements
 
 	tok_nested_elements =
-		( tok_nested_element >> *tok_nested_element )
-			[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ];
+	( tok_nested_element >> *tok_nested_element )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ]
+#endif
+	;
 
 	tok_nested_element =
-		( tok_nested_group | tok_nested_nongroup );
+	( tok_nested_group | tok_nested_nongroup )
+	;
 
 	tok_nested_group =
-		( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
-			[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ];
+	( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ]
+#endif
+	;
 
 	tok_nested_nongroup =
-		( qi::as_string [ +( qi::char_ - qi::char_("()") ) ] )
-			[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ];
+	( qi::as_string [ +( qi::char_ - qi::char_("()") ) ] )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
+#endif
+	;
 }
 
 } // namespace RegexSplitter
