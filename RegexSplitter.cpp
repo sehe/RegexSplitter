@@ -18,7 +18,8 @@ namespace phx = boost::phoenix;
 
 #include "RegexSplitter.h"
 
-#define PRINT_DEBUG
+//#define PRINT_DEBUG
+#undef PRINT_DEBUG
 
 namespace RegexSplitter {
 
@@ -181,6 +182,8 @@ ASTNode::ASTNode(
 
 ASTNode::~ASTNode()
 {
+
+#ifdef PRINT_DEBUG
 	std::cout << "### ASTNode d'tor #1: " << TypeStr(fType) << std::endl;
 	if (fType == COLLECTION_c)
 	{
@@ -190,6 +193,7 @@ ASTNode::~ASTNode()
 	{
 		std::cout << "### ASTNode d'tor #2: " << fString << std::endl;
 	}
+#endif
 }
 
 MyString::Type
@@ -287,7 +291,7 @@ Grammar::Grammar()
 	;
 
 	tok_TL_nongroup =
-	( qi::as_string[ +( qi::char_  - qi::char_("()") ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | qi::char_ ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ]
 #endif
@@ -314,7 +318,7 @@ Grammar::Grammar()
 	;
 
 	tok_nested_nongroup =
-	( qi::as_string [ +( qi::char_ - qi::char_("()") ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | qi::char_ ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif

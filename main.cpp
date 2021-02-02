@@ -1,13 +1,32 @@
+#include <string>
+#include <vector>
+#include <memory>
+#include <stdexcept>
 #include <iostream>
 #include <iomanip>
-#include <stdexcept>
-#include <memory>
+#include <fstream>
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 namespace qi = boost::spirit::qi;
 
 #include "RegexSplitter.h"
+
+static void ReadFromFile (
+		std::string const & fileName,
+		std::vector<std::string> & list)
+{
+	list.clear();
+	std::ifstream file;
+	file.open(fileName);
+    	if (!file)
+        	throw std::runtime_error("File not found!!");
+	else {
+		for (std::string line; std::getline(file, line); /* */) {
+			list.push_back(line);
+		}
+	}
+}
 
 template <typename Parser, typename ... Args>
 bool
@@ -57,57 +76,22 @@ main(
 		int argc,
 		char* argv[])
 {
-    if (argc >= 2)
-    {
-    	TestRegexSplitter(argv[1]);
-    }
-    else
-    {
-    	// some initial trials
-        TestRegexSplitter("hello");
-        TestRegexSplitter("(hello)");
-        TestRegexSplitter("(hello)(world)");
-        TestRegexSplitter("(hello)something(world)");
-        TestRegexSplitter("(hello)?something(world)");
-        TestRegexSplitter("(hello)?something((world))");
+	if (argc >= 2)
+	{
+		TestRegexSplitter(argv[1]);
+	}
+	else
+	{
+	    std::vector<std::string> reList;
+	    ReadFromFile("testfile-ok", reList);
+	    for (auto & re : reList)
+	    {
+		    TestRegexSplitter(re);
+	    }
 
-#if 0
-        TestRegexSplitter("aa");
-        TestRegexSplitter("Hello, World!");
-        TestRegexSplitter("FrankBergemann");
+	}
 
-        // groups
-        TestRegexSplitter("[a]");
-        TestRegexSplitter("[ab]");
-        TestRegexSplitter("[a-z]");
-        TestRegexSplitter("[b-c]");
-        TestRegexSplitter("[A-Z]");
-        TestRegexSplitter("[a-zA-Z]");
-        TestRegexSplitter("[abcABC]");
-
-        // negative groups
-        TestRegexSplitter("[^a]");
-        TestRegexSplitter("[^ab]");
-        TestRegexSplitter("[^a-z]");
-        TestRegexSplitter("[^b-c]");
-        TestRegexSplitter("[^A-Z]");
-        TestRegexSplitter("[^a-zA-Z]");
-        TestRegexSplitter("[^abcABC]");
-
-        // '*'
-        TestRegexSplitter("[abcABC]*");
-        TestRegexSplitter("[^abcABC]*");
-
-        // '+'
-        TestRegexSplitter("[abcABC]+");
-        TestRegexSplitter("[^abcABC]+");
-
-        TestRegexSplitter("SomeStrange.*Patter[nN]");
-        TestRegexSplitter("^SomeStrange.*Patter[nN]");
-#endif
-    }
-
-    return 0;
+	return 0;
 }
 
 /******************************************************************************/

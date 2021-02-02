@@ -1,0 +1,26 @@
+aa
+Hello, World!
+FrankBergemann
+[a]
+[ab]
+[a-z]
+[b-c]
+[A-Z]
+[a-zA-Z]
+[abcABC]
+[^a]
+[^ab]
+[^a-z]
+[^b-c]
+[^A-Z]
+[^a-zA-Z]
+[^abcABC]
+
+[abcABC]*
+[^abcABC]*
+
+[abcABC]+
+[^abcABC]+
+
+SomeStrange.*Patter[nN]
+^SomeStrange.*Patter[nN]
