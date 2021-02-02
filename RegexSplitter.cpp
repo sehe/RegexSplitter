@@ -291,7 +291,7 @@ Grammar::Grammar()
 	;
 
 	tok_TL_nongroup =
-	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | qi::char_ ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()")) ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ]
 #endif
@@ -318,7 +318,7 @@ Grammar::Grammar()
 	;
 
 	tok_nested_nongroup =
-	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | qi::char_ ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()")) ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif
