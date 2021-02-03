@@ -6,6 +6,7 @@
  */
 
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/qi_char_class.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 
 namespace qi = boost::spirit::qi;
@@ -65,7 +66,7 @@ ASTNode::ASTNode(
   fType(type)
 {
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor (ASTNode const *, std::vector<ASTNode *> &) #1: " << TypeStr(fType) << std::endl;
 #endif
 
 	fStrings.push_back(first->fString);
@@ -80,7 +81,7 @@ ASTNode::ASTNode(
 		other = nullptr;
 	}
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #2: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor (ASTNode const *, std::vector<ASTNode *> &) #2: " << TypeStr(fType) << std::endl;
 #endif
 }
 
@@ -95,10 +96,10 @@ ASTNode::ASTNode(
   fType(type)
 {
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor (std::string &) #1: " << TypeStr(fType) << std::endl;
 #endif
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #2: " << fString << std::endl;
+	std::cout << "### ASTNode c'tor (std::string &) #2: " << fString << std::endl;
 #endif
 };
 
@@ -155,13 +156,13 @@ ASTNode::ASTNode(
 	};
 
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #1: " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor (FUSION &) #1: " << TypeStr(fType) << std::endl;
 #endif
 	Collect collect;
 	boost::fusion::for_each(fusion, collect);
 	fString = MyString (collect.fCollect,  MyString::UNBREAKABLE_c);
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor #2: " << fString << std::endl;
+	std::cout << "### ASTNode c'tor (FUSION &) #2: " << fString << std::endl;
 #endif
 }
 
@@ -175,7 +176,7 @@ ASTNode::ASTNode(
   fType(type)
 {
 #ifdef PRINT_DEBUG
-	std::cout << "### ASTNode c'tor " << TypeStr(fType) << std::endl;
+	std::cout << "### ASTNode c'tor (char const)" << TypeStr(fType) << std::endl;
 #endif
 }
 #endif
@@ -258,7 +259,8 @@ Grammar::Grammar()
 : Grammar::base_type(tok_RE),
   tok_RE(),
   tok_TL_elements(), tok_TL_element(), tok_TL_group(), tok_TL_nongroup(),
-  tok_nested_elements(), tok_nested_element(), tok_nested_group(), tok_nested_nongroup()
+  tok_nested_elements(), tok_nested_element(), tok_nested_group(), tok_nested_nongroup(),
+  tok_set(), tok_positive_set(), tok_negative_set(), tok_set_items(), tok_set_item(), tok_range(), tok_char()
 {
 	tok_RE =
 #ifndef PARSER_ONLY
@@ -279,7 +281,7 @@ Grammar::Grammar()
 	;
 
 	tok_TL_element =
-	( tok_TL_group | tok_TL_nongroup )
+	( tok_TL_group | tok_set | tok_TL_nongroup )
 	;
 
 	tok_TL_group  =
@@ -307,7 +309,7 @@ Grammar::Grammar()
 	;
 
 	tok_nested_element =
-	( tok_nested_group | tok_nested_nongroup )
+	( tok_nested_group | tok_nested_nongroup ) // TODO: or tok_set (can it be shared for TL and non-TL?)
 	;
 
 	tok_nested_group =
@@ -323,6 +325,38 @@ Grammar::Grammar()
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif
 	;
+
+	tok_set =
+	( qi::as_string[ ( tok_positive_set | tok_negative_set) ] )
+#ifndef PARSER_ONLY
+	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
+#endif
+	;
+
+	tok_positive_set =
+	'[' >> tok_set_items >> ']'
+	;
+
+	tok_negative_set =
+	"[^" >> tok_set_items >> ']'
+	;
+
+	tok_set_items =
+	tok_set_item >> *tok_set_item
+	;
+
+	tok_set_item =
+	tok_range | tok_char
+	;
+
+	tok_range =
+	tok_char >> '-' >> tok_char
+	;
+
+	tok_char =
+	boost::spirit::ascii::alnum // TODO BNF: <char> 	::= 	any non metacharacter | "\" metacharacter
+	;
+
 }
 
 } // namespace RegexSplitter

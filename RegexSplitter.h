@@ -164,7 +164,11 @@ public:
 #endif
 	tok_RE,
 	tok_TL_elements, tok_TL_element, tok_TL_group, tok_TL_nongroup,
-	tok_nested_elements, tok_nested_element, tok_nested_group, tok_nested_nongroup;
+	tok_nested_elements, tok_nested_element, tok_nested_group, tok_nested_nongroup,
+	tok_set;
+
+	// no AST nodes required for these
+	qi::rule<Iterator> tok_positive_set, tok_negative_set, tok_set_items, tok_set_item, tok_range, tok_char;
 };
 
 } // RegexSplitter

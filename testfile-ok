@@ -8,3 +8,6 @@ Hello, World!
 (hello)?something((world))
 hello\(, world\)
 hello\(, world\)\\
+(hello)some\(\)thing(world)
+[0123456789]hello
+hello [Ff]rank
