@@ -19,46 +19,42 @@ static std::vector<std::string> ReadFromFile(std::string const &fileName) {
     return list;
 }
 
-template <typename Parser, typename... Args>
-bool Parse(const std::string &input, const Parser &p, Args &&...args) {
-    auto begin = input.begin(), end = input.end();
+namespace {
+    using namespace RegexSplitter;
 
-    bool result = parse(begin, end, p, std::forward<Args>(args)...);
-
-    if (!result || begin != end) {
-        std::cout << "Unparseable: '" << input << "', failed at: '"
-                  << std::string(begin, end) << "'" << std::endl;
-
-        result = false;
+    std::ostream& operator<<(std::ostream& os, Token::Kind k) {
+        switch(k) {
+            case Token::Group:    return os << "UNBREAKABLE_c";
+            case Token::Set:      return os << "CHARSET_c";
+            case Token::Nongroup: return os << "BREAKABLE_c";
+        }
+        return os << "?";
     }
-
-    return result;
 }
 
 void TestRegexSplitter(std::string const &input) {
-    RegexSplitter::Tokens out;
+    static const Grammar p{};
 
     std::cout << "TEST:" << input << std::endl;
 
-    bool result = Parse(input, RegexSplitter::Grammar(), out);
-    if (result) {
-        //for (auto const &token : out) {
-            //std::cout << "tok\n";
-        //}
-    }
+    Tokens tokens;
+    auto begin = input.begin(), end = input.end();
+
+    if (parse(begin, end, p/* >> eoi*/, tokens))
+        for (auto v: tokens)
+            std::cout << " - " << v.kind << " " << v.range << "\n";
+    else std::cout << "*** Parse Failed\n";
+
+    if (begin != end)
+        std::cout << "*** Remaining: '" << std::string(begin, end) << "'\n";
 }
 
 int main(int argc, char *argv[]) {
     std::vector<std::string> args(argv + 1, argv + argc);
-    if (args.empty()) {
+    if (args.empty())
         args.emplace_back("testfile-ok");
-    }
 
-    for (auto &file : args) {
-        for (auto &&re : ReadFromFile(file)) {
-            TestRegexSplitter(re);
-        }
-    }
+    for (auto file : args)
+    for (auto re : ReadFromFile(file))
+        TestRegexSplitter(re);
 }
-
-/******************************************************************************/

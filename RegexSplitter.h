@@ -1,66 +1,57 @@
-/*
- * RegexSplitter.h
- *
- *  Created on: Jan 9, 2020
- *      Author: frank
- */
 #pragma once
+//#define BOOST_SPIRIT_DEBUG
 #include <boost/spirit/include/qi.hpp>
+#include <boost/fusion/adapted.hpp>
 
-namespace RegexSplitter
-{
-    namespace qi = boost::spirit::qi;
-
-    struct COLLECTION_c;
-    struct BREAKABLE_c;
-    struct UNBREAKABLE_c;
-
+namespace RegexSplitter {
     using Iterator = std::string::const_iterator;
-    using Range = boost::iterator_range<Iterator>;
+    using Range    = boost::iterator_range<Iterator>; // std::string; 
 
     struct Token {
-        enum Kind { Group, Sequence } kind;
+        enum Kind { Group, Set, Nongroup } kind;
         Range range;
     };
 
-    using Tokens = qi::unused_type; // std::vector<Token>;
+    using Tokens = std::vector<Token>;
+}
 
-    struct Grammar : public qi::grammar<Iterator, Tokens()>
-    {
-        Grammar() : Grammar::base_type(tok_TL_elements)
-        {
-            // top level elements
-            tok_TL_elements     = +tok_TL_element;
-            tok_TL_element      = (tok_TL_group | tok_set | tok_TL_nongroup);
-            tok_TL_group        = ('(' >> tok_nested_elements >> ')' >> -qi::char_('?'));
-            tok_TL_nongroup     = (qi::as_string[+((qi::char_("\\") >> qi::char_) |
-                        (qi::char_ - qi::char_("()[]")))]);
+BOOST_FUSION_ADAPT_STRUCT(RegexSplitter::Token, kind, range)
 
-            // the nested elements
-            tok_nested_elements = *tok_nested_element;
-            tok_nested_element  = (tok_nested_group | tok_set | tok_nested_nongroup);
-            tok_nested_group    = '(' >> tok_nested_elements >> ')' >> -qi::char_('?');
-            tok_nested_nongroup = +('\\' >> qi::char_ | ~qi::char_("()[]"));
-            tok_set             = (tok_positive_set | tok_negative_set);
+namespace RegexSplitter {
+    namespace qi = boost::spirit::qi;
 
-            // TODO: merge tok_positive_set and tok_negative_set
-            tok_positive_set    = '[' >> tok_set_items >> ']';
-            tok_negative_set    = "[^" >> tok_set_items >> ']';
+    struct Grammar : public qi::grammar<Iterator, Tokens()> {
+        Grammar() : Grammar::base_type(elements) {
+            // elements
+            elements = *element;
+            element  = group | set | nongroup;
 
-            tok_set_items       = +tok_set_item;
-            tok_set_item        = tok_range | tok_char;
-            tok_range           = tok_char >> '-' >> tok_char;
-            // TODO BNF: <char> ::= any non metacharacter | "\" metacharacter
-            tok_char = qi::alnum;
+            group    = qi::attr(Token::Group) >> qi::raw [
+                       '(' >> elements >> ')' >> -qi::char_('?')
+                     ];
+
+            nongroup = qi::attr(Token::Nongroup) >> qi::raw [
+                       +('\\' >> qi::char_ | ~qi::char_("()[]"))
+                     ];
+
+            set      = qi::attr(Token::Set) >> qi::raw [
+                       '[' >> qi::matches['^'] >> *set_item >> ']'
+                     ];
+
+            // sets
+            set_item = range | char_;
+            range    = char_ >> '-' >> char_;
+            char_    = qi::alnum; // TODO BNF: <char> ::= any non metacharacter | "\" metacharacter
+
+            BOOST_SPIRIT_DEBUG_NODES((elements)(element)(group)(nongroup)(set)
+                (set_item)(range)(char_)
+            )
         }
 
-        qi::rule<Iterator, Tokens()> tok_RE, tok_TL_elements,
-            tok_TL_element, tok_TL_group, tok_TL_nongroup, tok_nested_elements,
-            tok_nested_element, tok_nested_group, tok_nested_nongroup, tok_set;
-
-        // no AST nodes required for these
-        qi::rule<Iterator, std::string()> tok_positive_set, tok_negative_set,
-            tok_set_items, tok_set_item, tok_range, tok_char;
+      private:
+        qi::rule<Iterator, Tokens()> elements;
+        qi::rule<Iterator, Token()>  element, group, nongroup, set;
+        qi::rule<Iterator>           set_item, range, char_;
     };
 
 } // namespace RegexSplitter
