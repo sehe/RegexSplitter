@@ -334,7 +334,7 @@ Grammar::Grammar()
 #endif
 	;
 
-	// TODO: merge tok_positive_set and tok_negative_Set
+	// TODO: merge tok_positive_set and tok_negative_set
 	tok_positive_set =
 	qi::char_('[') >> tok_set_items >> qi::char_(']')
 	;
@@ -356,7 +356,7 @@ Grammar::Grammar()
 	;
 
 	tok_char =
-	boost::spirit::ascii::alnum // TODO BNF: <char> ::= any non metacharacter | "\" metacharacter
+	qi::alnum // TODO BNF: <char> ::= any non metacharacter | "\" metacharacter
 	;
 
 }
