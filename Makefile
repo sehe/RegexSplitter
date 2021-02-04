@@ -22,10 +22,12 @@ RegexSplitter.o : RegexSplitter.cpp RegexSplitter.h
 main.o : main.cpp RegexSplitter.h
 regex-splitter : main.o RegexSplitter.o
 	$(CXX) -o $@ $(CXXFLAGS) $^
-	
 
 tidy :
-	run-clang-tidy-9 -fix -header-filter='.*' -checks='-*,readability-*,modernize-*,-modernize-use-trailing-return-type'
-
+	clang-tidy-11 \
+		-p . \
+	   	-fix -header-filter='.*' \
+		-checks='-*,readability-*,modernize-*,-modernize-use-trailing-return-type' \
+		*.cpp
 
 .PHONY : tidy clean
