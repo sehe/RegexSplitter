@@ -144,24 +144,20 @@ private:
 	static std::map<Type, std::string> const sType2String;
 };
 
-using ASTNodePtr = ASTNode*;
-
 #ifdef PARSER_ONLY
-class Grammar : public qi::grammar<std::string::const_iterator>
+using ASTNodePtr = qi::unused_type;
 #else
-class Grammar : public qi::grammar<std::string::const_iterator, ASTNode*>
+using ASTNodePtr = ASTNode*;
 #endif
+
+class Grammar : public qi::grammar<std::string::const_iterator, ASTNodePtr()>
 {
 public:
 	using Iterator = std::string::const_iterator;
 
 	Grammar();
 
-#ifdef PARSER_ONLY
-	qi::rule<Iterator>
-#else
-	qi::rule<Iterator, ASTNode*>
-#endif
+	qi::rule<Iterator, ASTNodePtr()>
 	tok_RE,
 	tok_TL_elements, tok_TL_element, tok_TL_group, tok_TL_nongroup,
 	tok_nested_elements, tok_nested_element, tok_nested_group, tok_nested_nongroup,

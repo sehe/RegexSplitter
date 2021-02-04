@@ -101,7 +101,7 @@ ASTNode::ASTNode(
 #ifdef PRINT_DEBUG
 	std::cout << "### ASTNode c'tor (std::string &) #2: " << fString << std::endl;
 #endif
-};
+}
 
 // UNBREAKABLE_c
 // TODO: this does not restrict to boost::fusion
@@ -234,7 +234,7 @@ ASTNode::GetString(void) const
 
 void
 ASTNode::print(
-		int indent)
+		int /*indent*/)
 {
 	for (auto & str : fStrings)
 	{
@@ -264,21 +264,15 @@ Grammar::Grammar()
   tok_set(), tok_positive_set(), tok_negative_set(), tok_set_items(), tok_set_item(), tok_range(), tok_char()
 {
 	tok_RE =
-#ifndef PARSER_ONLY
-	( tok_TL_elements )
-	[ qi::_val = qi::_1 ]
-#else
-	( tok_TL_elements.alias() )
-#endif
+     ( tok_TL_elements )
+     [ qi::_val = qi::_1 ]
 	;
 
 	// top level elements
 
 	tok_TL_elements =
 	( tok_TL_element >> *tok_TL_element )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ]
-#endif
 	;
 
 	tok_TL_element =
@@ -288,25 +282,19 @@ Grammar::Grammar()
 	tok_TL_group  =
 	// TODO: can a group be empty?
 	( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ]
-#endif
 	;
 
 	tok_TL_nongroup =
 	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()[]")) ) ] )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ]
-#endif
 	;
 
 	// the nested elements
 
 	tok_nested_elements =
 	( tok_nested_element >> *tok_nested_element )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, qi::_2, ASTNode::COLLECTION_c) ]
-#endif
 	;
 
 	tok_nested_element =
@@ -315,23 +303,17 @@ Grammar::Grammar()
 
 	tok_nested_group =
 	( qi::char_('(') >> tok_nested_elements >> qi::char_(')') >> (-qi::char_('?')) )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_0, ASTNode::UNBREAKABLE_c) ]
-#endif
 	;
 
 	tok_nested_nongroup =
 	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()[]")) ) ] )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
-#endif
 	;
 
 	tok_set =
 	( tok_positive_set | tok_negative_set )
-#ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
-#endif
 	;
 
 	// TODO: merge tok_positive_set and tok_negative_set
