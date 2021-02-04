@@ -19,13 +19,14 @@ static void ReadFromFile (
 	list.clear();
 	std::ifstream file;
 	file.open(fileName);
-    	if (!file)
-        	throw std::runtime_error("File not found!!");
-	else {
-		for (std::string line; std::getline(file, line); /* */) {
-			list.push_back(line);
-		}
-	}
+    if (!file)
+    {
+        throw std::runtime_error("File not found!!");
+    }
+    for (std::string line; std::getline(file, line); /* */)
+    {
+        list.push_back(line);
+    }
 }
 
 template <typename Parser, typename ... Args>
@@ -35,7 +36,7 @@ Parse(
 	const Parser& p,
     Args&& ... args)
 {
-	std::string::const_iterator begin = input.begin(), end = input.end();
+	auto begin = input.begin(), end = input.end();
 
     bool result = qi::parse(begin, end, p, std::forward<Args>(args) ...);
 

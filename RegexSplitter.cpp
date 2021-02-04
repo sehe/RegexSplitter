@@ -42,7 +42,7 @@ std::map<ASTNode::Type, std::string> const ASTNode::sType2String =
 };
 
 
-std::string const
+std::string 
 MyString::TypeStr(
 		Type const & type)
 {
@@ -61,9 +61,7 @@ ASTNode::ASTNode(
 		ASTNode const * first,
 		std::vector<ASTNode *> & others,
 		Type const type)
-: fString(),
-  fStrings(),
-  fType(type)
+: fType(type)
 {
 #ifdef PRINT_DEBUG
 	std::cout << "### ASTNode c'tor (ASTNode const *, std::vector<ASTNode *> &) #1: " << TypeStr(fType) << std::endl;
@@ -92,7 +90,7 @@ ASTNode::ASTNode(
 		std::string & data,
 		Type const type)
 : fString(data, TypeToDataType(type)),
-  fStrings(),
+  
   fType(type)
 {
 #ifdef PRINT_DEBUG
@@ -108,18 +106,13 @@ ASTNode::ASTNode(
 template < class FUSION >
 ASTNode::ASTNode(
 		FUSION & fusion,
-		Type const type)
-: fString(),
-  fStrings(),
+		Type type)
+: 
   fType(type)
 {
 	// local helper
 	struct Collect
 	{
-		Collect()
-		: fCollect()
-		{ }
-
 		void operator()( char c ) const
 		{
 #ifdef PRINT_DEBUG
@@ -217,7 +210,7 @@ ASTNode::TypeToDataType(
 }
 
 std::string // TODO: have to construct std::string because of COLLECTION_c
-ASTNode::GetString(void) const
+ASTNode::GetString() const
 {
 	if (fType ==  COLLECTION_c)
 	{
@@ -242,7 +235,7 @@ ASTNode::print(
 	}
 }
 
-std::string const
+std::string 
 ASTNode::TypeStr(
 		Type const & type)
 {
@@ -257,11 +250,8 @@ ASTNode::TypeStr(
 
 
 Grammar::Grammar()
-: Grammar::base_type(tok_RE),
-  tok_RE(),
-  tok_TL_elements(), tok_TL_element(), tok_TL_group(), tok_TL_nongroup(),
-  tok_nested_elements(), tok_nested_element(), tok_nested_group(), tok_nested_nongroup(),
-  tok_set(), tok_positive_set(), tok_negative_set(), tok_set_items(), tok_set_item(), tok_range(), tok_char()
+: Grammar::base_type(tok_RE)
+   
 {
 	tok_RE =
      ( tok_TL_elements )

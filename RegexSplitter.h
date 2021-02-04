@@ -9,6 +9,8 @@
 #define REGEX_SPLITTER_H_
 
 #include <string>
+#include <utility>
+
 #include <vector>
 #include <map>
 #include <iostream>
@@ -34,48 +36,40 @@ namespace RegexSplitter
 class MyString
 {
 public:
-	typedef enum
+    enum Type
 	{
 		UNDEFINED_c		= 0,
 		BREAKABLE_c		= 1,
 		UNBREAKABLE_c	= 2,
-	} Type;
-
-	MyString()
-	: fStr(),
-	  fType(UNDEFINED_c)
-	{ }
+	};
 
 	MyString (
-			std::string const & str,
-			Type const type)
-	: fStr(str),
+			std::string str = {},
+			Type const type = UNDEFINED_c)
+	: fStr(std::move(str)),
 	  fType(type)
-	{ }
-
-	~MyString()
 	{ }
 
 	// other standard functions: compiler generated
 
 	std::string const &
-	GetStr(void) const
+	GetStr() const
 	{
 		return fStr;
 	}
 
 	Type const &
-	GetType(void) const
+	GetType() const
 	{
 		return fType;
 	}
 
-	static std::string const
+	static std::string 
 	TypeStr(Type const & type);
 
 private:
 	std::string fStr;
-	Type fType;
+	Type fType{UNDEFINED_c};
 	static std::map<Type, std::string> const sType2String;
 };
 
@@ -97,18 +91,18 @@ public:
 	ASTNode(
 			ASTNode const * first,
 			std::vector<ASTNode *> & others,
-			Type const type);
+			Type type);
 
 	// BREAKABLE_c
 	ASTNode(
 			std::string & data,
-			Type const type);
+			Type type);
 
 	// UNBREAKABLE_c
 	template < class FUSION >
 	ASTNode(
 			FUSION & fusion,
-			Type const type);
+			Type type);
 
 #if 0
 	// TEST_c, used for debugging
@@ -123,14 +117,14 @@ public:
 	void print(
 			int indent = 0);
 
-	static std::string const
+	static std::string 
 	TypeStr(
 			Type const & type);
 
 	std::string
-	GetString(void) const;
+	GetString() const;
 
-	MyString::Type
+	static MyString::Type
 	TypeToDataType(
 			Type type);
 
