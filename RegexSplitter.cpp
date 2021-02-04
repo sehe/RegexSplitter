@@ -20,7 +20,7 @@ namespace phx = boost::phoenix;
 #include "RegexSplitter.h"
 
 //#define PRINT_DEBUG
-#undef PRINT_DEBUG
+#define PRINT_DEBUG
 
 namespace RegexSplitter {
 
@@ -328,7 +328,7 @@ Grammar::Grammar()
 	;
 
 	tok_set =
-	( tok_positive_set | tok_negative_set)
+	( tok_positive_set | tok_negative_set )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif
@@ -336,11 +336,11 @@ Grammar::Grammar()
 
 	// TODO: merge tok_positive_set and tok_negative_Set
 	tok_positive_set =
-	'[' >> tok_set_items >> ']'
+	qi::char_('[') >> tok_set_items >> qi::char_(']')
 	;
 
 	tok_negative_set =
-	"[^" >> tok_set_items >> ']'
+	qi::char_('[') >> qi::char_('^') >> tok_set_items >> qi::char_(']')
 	;
 
 	tok_set_items =
@@ -352,11 +352,11 @@ Grammar::Grammar()
 	;
 
 	tok_range =
-	tok_char >> '-' >> tok_char
+	tok_char >> qi::char_('-') >> tok_char
 	;
 
 	tok_char =
-	boost::spirit::ascii::alnum // TODO BNF: <char> 	::= 	any non metacharacter | "\" metacharacter
+	boost::spirit::ascii::alnum // TODO BNF: <char> ::= any non metacharacter | "\" metacharacter
 	;
 
 }
