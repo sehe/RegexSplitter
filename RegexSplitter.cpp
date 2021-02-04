@@ -104,6 +104,7 @@ ASTNode::ASTNode(
 };
 
 // UNBREAKABLE_c
+// TODO: this does not restrict to boost::fusion
 template < class FUSION >
 ASTNode::ASTNode(
 		FUSION & fusion,
@@ -293,7 +294,7 @@ Grammar::Grammar()
 	;
 
 	tok_TL_nongroup =
-	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()")) ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()[]")) ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::BREAKABLE_c) ]
 #endif
@@ -309,7 +310,7 @@ Grammar::Grammar()
 	;
 
 	tok_nested_element =
-	( tok_nested_group | tok_nested_nongroup ) // TODO: or tok_set (can it be shared for TL and non-TL?)
+	( tok_nested_group | tok_set | tok_nested_nongroup )
 	;
 
 	tok_nested_group =
@@ -320,19 +321,20 @@ Grammar::Grammar()
 	;
 
 	tok_nested_nongroup =
-	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()")) ) ] )
+	( qi::as_string[ +( (qi::char_("\\") >> qi::char_) | (qi::char_ - qi::char_("()[]")) ) ] )
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif
 	;
 
 	tok_set =
-	( qi::as_string[ ( tok_positive_set | tok_negative_set) ] )
+	( tok_positive_set | tok_negative_set)
 #ifndef PARSER_ONLY
 	[ qi::_val = phx::new_<ASTNode> (qi::_1, ASTNode::UNBREAKABLE_c) ]
 #endif
 	;
 
+	// TODO: merge tok_positive_set and tok_negative_Set
 	tok_positive_set =
 	'[' >> tok_set_items >> ']'
 	;

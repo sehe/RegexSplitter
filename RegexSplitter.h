@@ -168,7 +168,7 @@ public:
 	tok_set;
 
 	// no AST nodes required for these
-	qi::rule<Iterator> tok_positive_set, tok_negative_set, tok_set_items, tok_set_item, tok_range, tok_char;
+	qi::rule<Iterator, std::string()> tok_positive_set, tok_negative_set, tok_set_items, tok_set_item, tok_range, tok_char;
 };
 
 } // RegexSplitter
